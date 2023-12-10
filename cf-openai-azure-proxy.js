@@ -4,10 +4,17 @@ const resourceName=RESOURCE_NAME
 // The deployment name you chose when you deployed the model.
 const mapper = {
     'gpt-3.5-turbo': DEPLOY_NAME_GPT35,
-    'gpt-4': DEPLOY_NAME_GPT4
+    'gpt-3.5-turbo-0613': DEPLOY_NAME_GPT35,
+    'gpt-3.5-turbo-1106': DEPLOY_NAME_GPT35,
+    'gpt-3.5-turbo-16k': DEPLOY_NAME_GPT35,
+    'gpt-4': DEPLOY_NAME_GPT4,
+    'gpt-4-0613': DEPLOY_NAME_GPT4,
+    'gpt-4-1106-preview': DEPLOY_NAME_GPT4,
+    'gpt-4-32k': DEPLOY_NAME_GPT4,
+    'dall-e-3': typeof DEPLOY_NAME_DALLE3 !== 'undefined' ? DEPLOY_NAME_DALLE3 : "dalle3",
 };
 
-const apiVersion="2023-03-15-preview"
+const apiVersion="2023-12-01-preview"
 
 addEventListener("fetch", (event) => {
   event.respondWith(handleRequest(event.request));
@@ -19,8 +26,13 @@ async function handleRequest(request) {
   }
 
   const url = new URL(request.url);
+  if (url.pathname.startsWith("//")) {
+    url.pathname = url.pathname.replace('/',"")
+  }
   if (url.pathname === '/v1/chat/completions') {
     var path="chat/completions"
+  } else if (url.pathname === '/v1/images/generations') {
+    var path="images/generations"
   } else if (url.pathname === '/v1/completions') {
     var path="completions"
   } else if (url.pathname === '/v1/models') {
@@ -103,7 +115,7 @@ async function stream(readable, writable) {
     // Loop through all but the last line, which may be incomplete.
     for (let i = 0; i < lines.length - 1; i++) {
       await writer.write(encoder.encode(lines[i] + delimiter));
-      await sleep(30);
+      await sleep(20);
     }
 
     buffer = lines[lines.length - 1];
